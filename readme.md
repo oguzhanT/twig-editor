@@ -2,8 +2,6 @@
 
 A powerful browser-based editor for Twig templates with syntax highlighting, code formatting, error checking, intelligent autocomplete, and AI assistance.
 
-![Twig Editor Screenshot](screenshot.png)
-
 ## Features
 
 ### Core Features
@@ -31,35 +29,12 @@ A powerful browser-based editor for Twig templates with syntax highlighting, cod
   - After `is` shows test operators
 - Type-based filtering (e.g., "array_" to see only array-related functions)
 - Full block templates that expand into complete structures
-- Multi-word tag support (e.g., "ignore missing")
-
-### Syntax Validation
-- Real-time error detection:
-  - Unclosed Twig blocks and variable tags
-  - Mismatched block names (if/endif, for/endfor, etc.)
-  - Proper nesting validation
-  - Missing quotes in include statements
-  - Invalid filter usage
-  - Operator spacing validation
-- Visual error indicators:
-  - Underlined error locations
-  - Error messages in status bar
-  - Quick navigation to errors
-  - Error count display
-
-### Code Formatting
-- Smart indentation for nested Twig blocks
-- Proper HTML formatting
-- Consistent spacing around operators
-- Clean delimiter spacing
-- Preserved empty lines
-- Proper handling of inline tags
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/twig-editor.git
+git clone https://github.com/oguzhanT/twig-editor.git
 cd twig-editor
 ```
 
@@ -82,59 +57,17 @@ cd twig-editor
 3. Click "Send" or press Cmd/Ctrl + Enter
 4. Click "Copy & Insert" to add the generated code to your editor
 
-### Autocomplete Contexts
-
-1. **Twig Tags** (after `{%`):
-   - Type to see available tags
-   - Supports multi-word tags
-   - Expands into full block templates
-
-2. **Functions** (after `{{`):
-   - Shows available Twig functions
-   - Includes function signatures
-   - Filters by prefix
-
-3. **Filters** (after `|`):
-   - Shows all available filters
-   - Includes filter descriptions
-   - Context-aware suggestions
-
-4. **Tests** (after `is`):
-   - Shows available test operators
-   - Includes usage examples
-
-### Code Templates
-When you start typing a Twig block name after `{%`, you'll get suggestions for complete block structures:
-
-- `if` expands to a complete if-endif block
-- `for` expands to a for-endfor loop with else case
-- `block` expands to a named block definition
-- `macro` expands to a macro definition with parameters
-
 ## Project Structure
-
-The project is organized into several files:
 
 - `index.html`: Main HTML file with editor structure
 - `styles.css`: CSS styling for the editor interface
 - `twig-mode.js`: Custom CodeMirror mode for Twig syntax highlighting and folding
 - `twig-data.js`: Data for autocompletion from Twig documentation
 - `twig-editor.js`: Main editor implementation with all core features
-
-## Customization
-
-### Changing Default Theme
-Edit the CSS variables in `styles.css` to customize colors for both dark and light themes.
-
-### Adding Custom Snippets
-Add your own code templates by modifying the `twigBlockTemplates` object in `twig-data.js`.
-
-### Extending Autocomplete
-Add new Twig functions, filters, or tags by updating the corresponding arrays in `twig-data.js`.
+- `ai-assistant.js`: AI integration for code assistance
 
 ## Dependencies
 
-This project uses:
 - [CodeMirror](https://codemirror.net/) (v5.65.3) for the editor component
 - [js-beautify](https://github.com/beautify-web/js-beautify) for code formatting
 
