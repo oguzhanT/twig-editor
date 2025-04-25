@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twig Editor</title>
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/hint/show-hint.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/fold/foldgutter.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <button id="formatBtn">Format Code</button>
+            <button id="checkSyntaxBtn">Check Syntax</button>
+            <span class="shortcut-hint">Mac: ⌘+B for autocomplete | ⌘+/ for folding</span>
+            <div id="darkModeToggle" class="dark-mode-toggle">☀️</div>
+        </div>
+        
+        <div class="editor-container">
+            <textarea id="editor"></textarea>
+        </div>
+        
+        <div class="ai-assistant-container">
+            <div class="ai-toolbar">
+                <select id="aiModel" class="ai-model-select">
+                    <option value="chatgpt">ChatGPT</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="claude">Claude</option>
+                </select>
+                <button id="clearAiChat" class="secondary-button">Clear Chat</button>
+            </div>
+            <div class="ai-chat">
+                <div id="aiMessages" class="ai-messages"></div>
+                <div class="ai-input-container">
+                    <textarea 
+                        id="aiPrompt" 
+                        placeholder="Ask AI to help with Twig code (e.g., 'Create a for loop that displays a list of products with price and description')"
+                        rows="3"
+                    ></textarea>
+                    <button id="sendToAi" class="primary-button">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="message-container">
+            <div id="errorMessage" class="message error"></div>
+            <div id="successMessage" class="message success"></div>
+        </div>
+        
+        <div class="status-bar">
+            <div id="cursorPosition">Line: 1, Column: 1</div>
+            <div id="errorCount"></div>
+        </div>
+    </div>
+
+    <!-- CodeMirror Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/fold/xml-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/fold/brace-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/hint/xml-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/hint/html-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
+    
+    <!-- Add these before your custom scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/fold/indent-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/fold/comment-fold.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="twig-mode.js"></script>
+    <script src="twig-data.js"></script>
+    <script src="twig-editor.js"></script>
+    <script src="ai-assistant.js"></script>
+</body>
+</html>
