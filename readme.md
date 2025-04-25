@@ -9,15 +9,16 @@ A powerful browser-based editor for Twig templates with syntax highlighting, cod
 - **Code Formatting**: Format both HTML and Twig-specific syntax with correct indentation
 - **Syntax Checking**: Validate Twig syntax with detailed error messages
 - **Smart Autocomplete**: Context-aware suggestions from the complete Twig documentation
-- **Code Folding**: Collapse HTML and Twig blocks for better readability
+- **Enhanced Code Folding**: Improved folding for both HTML and Twig blocks with visual indicators
 - **Dark/Light Mode**: Choose your preferred theme with a single click
 - **Keyboard Shortcuts**: Improve productivity with helpful shortcuts
+- **Mobile Responsive**: Works on various screen sizes and devices
 
 ### AI Assistant
 - **Smart Suggestions**: Get context-aware code examples and explanations
 - **Code Generation**: Generate Twig templates based on natural language descriptions
 - **Syntax Help**: Get instant help with Twig syntax and best practices
-- **Multiple AI Models**: Support for different AI models (ChatGPT, Gemini, Claude)
+- **Multiple AI Models**: Support for ChatGPT and Gemini (simulated offline)
 - **Quick Insert**: Copy and insert AI-generated code directly into the editor
 
 ### Smart Autocomplete Features
@@ -34,11 +35,19 @@ A powerful browser-based editor for Twig templates with syntax highlighting, cod
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/oguzhanT/twig-editor.git
+git clone https://github.com/yourusername/twig-editor.git
 cd twig-editor
 ```
 
 2. Open `index.html` in your browser or serve it with any static file server.
+
+For local development with direct file access (no server):
+- Open the file directly in your browser using `file://` protocol
+- All dependencies are loaded via CDN links, so no build step is required
+
+For deployment:
+- Upload all files to a web server
+- No additional configuration required
 
 ## Usage
 
@@ -53,7 +62,7 @@ cd twig-editor
 
 ### AI Assistant Usage
 1. Type your question or request in the AI prompt area
-2. Select your preferred AI model
+2. Select your preferred AI model (ChatGPT or Gemini)
 3. Click "Send" or press Cmd/Ctrl + Enter
 4. Click "Copy & Insert" to add the generated code to your editor
 
@@ -78,6 +87,15 @@ Tested and working in:
 - Firefox 88+
 - Safari 14+
 - Edge 90+
+
+## Recent Improvements
+
+- **Enhanced Code Folding**: Improved handling of nested blocks and HTML tags
+- **Better Mobile Support**: Responsive design for smaller screens
+- **Error Recovery**: Smart suggestions for fixing syntax errors
+- **Performance Optimizations**: Debouncing for expensive operations
+- **Simplified AI Assistant**: Works offline with pre-defined examples
+- **Better UI Feedback**: Loading indicators and improved error messages
 
 ## Contributing
 

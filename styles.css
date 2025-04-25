@@ -459,3 +459,223 @@ button:hover {
 .html-error-mark {
     text-decoration: wavy underline var(--html-error-color);
 }
+
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .shortcut-hint {
+        display: none; /* Hide keyboard shortcuts on mobile */
+    }
+    
+    /* Toolbar adjustments */
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 8px;
+    }
+    
+    .toolbar button {
+        margin-bottom: 8px;
+        padding: 10px; /* Larger touch targets */
+    }
+    
+    .dark-mode-toggle {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        margin: 0;
+        font-size: 20px; /* Larger icon */
+        padding: 8px;
+    }
+    
+    /* Editor container */
+    .editor-container {
+        height: 40vh; /* Slightly smaller on mobile */
+    }
+    
+    /* CodeMirror adjustments */
+    .CodeMirror {
+        font-size: 13px; /* Slightly smaller font */
+    }
+    
+    /* AI Assistant panel */
+    .ai-assistant-container {
+        height: auto;
+        max-height: 40vh;
+    }
+    
+    .ai-toolbar {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .ai-messages {
+        max-height: 150px;
+    }
+    
+    .ai-input-container {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    #aiPrompt {
+        min-height: 80px;
+        margin-bottom: 8px;
+    }
+    
+    .primary-button, .secondary-button {
+        width: 100%;
+        padding: 12px; /* Larger touch target */
+    }
+    
+    /* Status bar */
+    .status-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        font-size: 12px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+    }
+    
+    .editor-container,
+    .ai-assistant-container {
+        height: auto;
+        max-height: 35vh;
+    }
+    
+    .CodeMirror {
+        font-size: 12px;
+    }
+    
+    .message {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+/* Landscape orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+    .editor-container {
+        height: 30vh;
+    }
+    
+    .ai-assistant-container {
+        height: auto;
+        max-height: 25vh;
+    }
+    
+    .toolbar {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar button {
+        margin-right: 5px;
+        margin-bottom: 5px;
+        padding: 6px 10px;
+    }
+}
+
+/* Enhanced error messages for mobile */
+@media (max-width: 768px) {
+    .error, .success, .warning {
+        padding: 8px;
+        font-size: 12px;
+    }
+    
+    .error-suggestion {
+        margin-top: 5px;
+        font-size: 11px;
+        font-style: italic;
+    }
+}
+
+/* Add these utility classes */
+.error-suggestion {
+    margin-top: 8px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.9em;
+}
+
+.warning {
+    background-color: rgba(255, 192, 0, 0.2);
+    color: #ff9800;
+    border: 1px solid #ff9800;
+}
+
+/* Add animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(10px); }
+}
+
+/* Touch-friendly adjustments */
+@media (pointer: coarse) {
+    button, select, .dark-mode-toggle {
+        min-height: 44px; /* Minimum Apple recommended touch target size */
+    }
+    
+    .CodeMirror-foldgutter-open, 
+    .CodeMirror-foldgutter-folded {
+        padding: 8px;
+    }
+    
+    .CodeMirror-gutter-elt {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
+
+/* Improve scrollbars on mobile */
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+/* Fix for small iOS devices */
+@supports (-webkit-touch-callout: none) {
+    .editor-container,
+    .ai-assistant-container {
+        /* Fix for iOS viewport units */
+        height: 40vh; /* Fallback */
+        height: -webkit-fill-available;
+        max-height: 40vh;
+    }
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--button-bg);
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

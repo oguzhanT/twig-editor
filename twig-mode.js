@@ -115,29 +115,37 @@ CodeMirror.defineMode("twig", function(config) {
 CodeMirror.defineMIME("text/x-twig", "twig");
 
 // Define custom folding for Twig templates
+// Replace the current twigFold function in twig-mode.js with this improved version
+
 function twigFold(cm, start) {
     const line = cm.getLine(start.line);
     const maxLines = cm.lineCount();
     
-    // Handle Twig blocks
+    // Handle Twig blocks with improved detection and nesting support
     const twigMatch = line.match(/{%[-\s]*(\w+)(?:\s|%})/);
     if (twigMatch) {
         const blockType = twigMatch[1];
-        if (!blockType.startsWith('end')) {
+        if (!blockType.startsWith('end') && 
+            ['if', 'for', 'block', 'macro', 'embed', 'set', 'apply', 'verbatim', 'with'].includes(blockType)) {
             let depth = 1;
             let endLine = -1;
             
             for (let i = start.line + 1; i < maxLines; i++) {
                 const nextLine = cm.getLine(i);
-                if (nextLine.match(new RegExp(`{%[-\\s]*${blockType}\\b`))) {
-                    depth++;
-                }
-                if (nextLine.match(new RegExp(`{%[-\\s]*end${blockType}\\b`))) {
-                    depth--;
-                    if (depth === 0) {
-                        endLine = i;
-                        break;
-                    }
+                
+                // Count opening tags of the same type
+                const openTagRegex = new RegExp(`{%[-\\s]*${blockType}\\b`, 'g');
+                const openTags = (nextLine.match(openTagRegex) || []).length;
+                depth += openTags;
+                
+                // Count closing tags
+                const closeTagRegex = new RegExp(`{%[-\\s]*end${blockType}\\b`, 'g');
+                const closeTags = (nextLine.match(closeTagRegex) || []).length;
+                depth -= closeTags;
+                
+                if (depth === 0) {
+                    endLine = i;
+                    break;
                 }
             }
             
@@ -150,24 +158,37 @@ function twigFold(cm, start) {
         }
     }
     
-    // Handle HTML tags
+    // Handle HTML tags with improved nesting support
     const htmlMatch = line.match(/<([a-zA-Z][a-zA-Z0-9]*)(?:\s[^>]*)?>/);
-    if (htmlMatch && !line.match(/<\/[^>]*>/)) {
-        const tagName = htmlMatch[1];
+    if (htmlMatch && !line.match(new RegExp(`</${htmlMatch[1]}>`, 'i')) && !line.match(/<[^>]*\/>/)) {
+        const tagName = htmlMatch[1].toLowerCase();
+        
+        // Skip self-closing tags
+        const selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 
+                               'link', 'meta', 'param', 'source', 'track', 'wbr'];
+        if (selfClosingTags.includes(tagName)) {
+            return null;
+        }
+        
         let depth = 1;
         let endLine = -1;
         
         for (let i = start.line + 1; i < maxLines; i++) {
             const nextLine = cm.getLine(i);
-            if (nextLine.match(new RegExp(`<${tagName}(?:\\s[^>]*)?>`))) {
-                depth++;
-            }
-            if (nextLine.match(new RegExp(`</${tagName}>`))) {
-                depth--;
-                if (depth === 0) {
-                    endLine = i;
-                    break;
-                }
+            
+            // Count opening tags of the same type (properly handle attributes with spaces)
+            const openTagRegex = new RegExp(`<${tagName}(?:\\s[^>]*)?(?<!/)>`, 'gi');
+            const openTags = (nextLine.match(openTagRegex) || []).length;
+            depth += openTags;
+            
+            // Count closing tags
+            const closeTagRegex = new RegExp(`</${tagName}>`, 'gi');
+            const closeTags = (nextLine.match(closeTagRegex) || []).length;
+            depth -= closeTags;
+            
+            if (depth === 0) {
+                endLine = i;
+                break;
             }
         }
         
@@ -176,6 +197,69 @@ function twigFold(cm, start) {
                 from: CodeMirror.Pos(start.line, 0),
                 to: CodeMirror.Pos(endLine, cm.getLine(endLine).length)
             };
+        }
+    }
+    
+    // Handle div/section/main blocks
+    if (/^\s*<(div|section|main|article|header|footer|aside|nav)/.test(line)) {
+        const blockMatch = line.match(/<(div|section|main|article|header|footer|aside|nav)/);
+        if (blockMatch) {
+            const blockType = blockMatch[1];
+            let depth = 1;
+            let endLine = -1;
+            
+            for (let i = start.line + 1; i < maxLines; i++) {
+                const nextLine = cm.getLine(i);
+                
+                // Count opening block tags
+                const openTagRegex = new RegExp(`<${blockType}(?:\\s|>)`, 'g');
+                const openTags = (nextLine.match(openTagRegex) || []).length;
+                depth += openTags;
+                
+                // Count closing block tags
+                const closeTagRegex = new RegExp(`</${blockType}>`, 'g');
+                const closeTags = (nextLine.match(closeTagRegex) || []).length;
+                depth -= closeTags;
+                
+                if (depth === 0) {
+                    endLine = i;
+                    break;
+                }
+            }
+            
+            if (endLine !== -1) {
+                return {
+                    from: CodeMirror.Pos(start.line, 0),
+                    to: CodeMirror.Pos(endLine, cm.getLine(endLine).length)
+                };
+            }
+        }
+    }
+    
+    // Add special support for common paired tags
+    const pairedTags = {
+        '<ul>': '</ul>',
+        '<ol>': '</ol>',
+        '<table>': '</table>',
+        '<tr>': '</tr>',
+        '<form>': '</form>',
+        '<head>': '</head>',
+        '<body>': '</body>',
+        '<style>': '</style>',
+        '<script>': '</script>'
+    };
+    
+    for (const [openTag, closeTag] of Object.entries(pairedTags)) {
+        if (line.includes(openTag) && !line.includes(closeTag)) {
+            // Look for matching close tag
+            for (let i = start.line + 1; i < maxLines; i++) {
+                if (cm.getLine(i).includes(closeTag)) {
+                    return {
+                        from: CodeMirror.Pos(start.line, 0),
+                        to: CodeMirror.Pos(i, cm.getLine(i).length)
+                    };
+                }
+            }
         }
     }
     

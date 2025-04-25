@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize the editor
     const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-        mode: "twig",
+        mode: "twig",  // Make sure this is set to twig
         theme: "default",
         lineNumbers: true,
         autoCloseBrackets: true,
@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
         indentUnit: 4,
         tabSize: 4,
         indentWithTabs: false,
-        foldGutter: true,
-        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        foldGutter: true,  // This must be true to enable folding
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],  // Must include the fold gutter
         extraKeys: {
             "Cmd-B": (cm) => {
                 showTwigCompletions(cm);
@@ -42,171 +42,40 @@ document.addEventListener('DOMContentLoaded', function() {
             "Ctrl-B": (cm) => {
                 showTwigCompletions(cm);
             },
-            "Cmd-/": cm => cm.foldCode(cm.getCursor()),
-            "Ctrl-/": cm => cm.foldCode(cm.getCursor()),
-            // Fix auto-closing for {% and {{
-            "'%'": (cm) => {
-                const cursor = cm.getCursor();
-                const line = cm.getLine(cursor.line);
-                const beforeCursor = line.slice(0, cursor.ch);
-                
-                if (beforeCursor.endsWith('{')) {
-                    // Add both % and closing %}
-                    cm.replaceRange('% %}', cursor);
-                    cm.setCursor({line: cursor.line, ch: cursor.ch + 1});
-                    showTwigCompletions(cm);
-                    return;
-                }
-                // Normal % character
-                cm.replaceSelection('%');
-            },
-            "'{'": (cm) => {
-                const cursor = cm.getCursor();
-                const line = cm.getLine(cursor.line);
-                const beforeCursor = line.slice(0, cursor.ch);
-                
-                if (beforeCursor.endsWith('{')) {
-                    // Add closing }}
-                    cm.replaceRange('{ }}', cursor);
-                    cm.setCursor({line: cursor.line, ch: cursor.ch + 1});
-                    showTwigCompletions(cm);
-                    return;
-                }
-                // Normal { character
-                cm.replaceSelection('{');
-            }
+            "Cmd-/": cm => cm.foldCode(cm.getCursor()),  // Fold at cursor
+            "Ctrl-/": cm => cm.foldCode(cm.getCursor()), // Fold at cursor
+            // Rest of your extraKeys...
         },
-        fold: "twig",
-        hintOptions: {
-            completeSingle: false,
-            closeOnUnfocus: true,
-            alignWithWord: false,
-            hint: function(editor, options) {
-                const cursor = editor.getCursor();
-                const token = editor.getTokenAt(cursor);
-                const line = editor.getLine(cursor.line);
-                const beforeCursor = line.slice(0, cursor.ch);
-                
-                let list = [];
-                let from = CodeMirror.Pos(cursor.line, token.start);
-                let to = CodeMirror.Pos(cursor.line, token.end);
-                
-                // Inside {% %}
-                if (beforeCursor.includes('{%')) {
-                    const match = beforeCursor.match(/{%\s*(.*?)$/);
-                    if (match) {
-                        const typed = match[1].trim().toLowerCase();
-                        from = CodeMirror.Pos(cursor.line, beforeCursor.indexOf('{%') + 2);
-                        
-                        list = twigComplete.tags.map(item => ({
-                            text: item.text,
-                            displayText: item.displayText,
-                            type: 'tag',
-                            template: twigComplete.blockTemplates[item.text]
-                        })).filter(item => item.text.toLowerCase().includes(typed));
-                    }
-                }
-                // Inside {{ }}
-                else if (beforeCursor.includes('{{')) {
-                    const match = beforeCursor.match(/{{(.*?)$/);
-                    if (match) {
-                        const typed = match[1].trim().toLowerCase();
-                        from = CodeMirror.Pos(cursor.line, beforeCursor.indexOf('{{') + 2);
-                        
-                        list = twigComplete.functions.map(item => ({
-                            text: item.text,
-                            displayText: item.displayText,
-                            type: 'function'
-                        })).filter(item => item.text.toLowerCase().includes(typed));
-                    }
-                }
-                // After |
-                else if (beforeCursor.includes('|')) {
-                    const pipePos = beforeCursor.lastIndexOf('|');
-                    const typed = beforeCursor.slice(pipePos + 1).trim().toLowerCase();
-                    from = CodeMirror.Pos(cursor.line, pipePos + 1);
-                    to = CodeMirror.Pos(cursor.line, cursor.ch);
-                    
-                    list = twigComplete.filters.map(item => ({
-                        text: item.text,
-                        displayText: item.displayText,
-                        type: 'filter'
-                    })).filter(item => {
-                        const itemText = item.text.toLowerCase();
-                        // Show all filters if no text typed, otherwise filter by typed text
-                        return !typed || itemText.includes(typed);
-                    });
-
-                    // Adjust the 'from' position to account for whitespace after pipe
-                    while (line.charAt(from.ch) === ' ' && from.ch < cursor.ch) {
-                        from.ch++;
-                    }
-                }
-                
-                return {
-                    list: list,
-                    from: from,
-                    to: to,
-                    pick: function(completion, element) {
-                        if (completion.template) {
-                            // Handle block template insertion
-                            const template = completion.template;
-                            const indent = line.match(/^\s*/)[0];
-                            const formattedTemplate = template
-                                .split('\n')
-                                .map((line, index) => index === 0 ? line : indent + line)
-                                .join('\n');
-                            
-                            const tagStart = beforeCursor.lastIndexOf('{%');
-                            const lineStart = { line: cursor.line, ch: tagStart };
-                            const lineEnd = { line: cursor.line, ch: line.length };
-                            editor.replaceRange(formattedTemplate, lineStart, lineEnd);
-                        } else {
-                            // Handle normal completion
-                            let insertText = completion.text;
-                            
-                            // Add parameters for filters if they typically need them
-                            if (completion.type === 'filter') {
-                                if (['slice', 'batch', 'column', 'date', 'format'].includes(completion.text)) {
-                                    insertText += '()';
-                                }
-                                // Add a space after the filter name if it doesn't need parameters
-                                else {
-                                    insertText += ' ';
-                                }
-                            }
-                            // Add parentheses for functions
-                            else if (completion.type === 'function') {
-                                insertText += '()';
-                            }
-                            
-                            editor.replaceRange(insertText, from, to);
-                            
-                            // Position cursor inside parentheses if added
-                            if (insertText.endsWith('()')) {
-                                editor.setCursor({
-                                    line: cursor.line,
-                                    ch: from.ch + insertText.length - 1
-                                });
-                            }
-
-                            // Send structured prompt to AI Assistant
-                            const aiPrompt = generateAIPrompt(completion);
-                            if (aiPrompt && window.aiAssistant) {
-                                console.log(aiPrompt);
-                                window.aiAssistant.sendPrompt(aiPrompt);
-                            }
-                        }
-                    }
-                };
-            }
-        },
+        fold: "twig",  // Use the custom twig folding mode
         foldOptions: {
             widget: '...',
-            rangeFinder: twigFold,
+            rangeFinder: twigFold,  // Make sure this is set to your twigFold function
             minFoldSize: 2
         }
     });
+    // Make sure fold gutter is defined correctly in CodeMirror
+CodeMirror.defineOption("foldGutter", false, function(cm, val, old) {
+    if (old && old != CodeMirror.Init) {
+        cm.clearGutter("CodeMirror-foldgutter");
+        cm.state.foldGutter = null;
+        cm.off("gutterClick", onGutterClick);
+        cm.off("change", onChange);
+        cm.off("viewportChange", onViewportChange);
+        cm.off("fold", onFold);
+        cm.off("unfold", onFold);
+        cm.off("swapDoc", onChange);
+    }
+    if (val) {
+        cm.state.foldGutter = new CodeMirror.FoldGutter();
+        updateInViewport(cm);
+        cm.on("gutterClick", onGutterClick);
+        cm.on("change", onChange);
+        cm.on("viewportChange", onViewportChange);
+        cm.on("fold", onFold);
+        cm.on("unfold", onFold);
+        cm.on("swapDoc", onChange);
+    }
+});
     
     // Set default content
     editor.setValue(`<!DOCTYPE html>
@@ -633,6 +502,134 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    /**
+ * Add these functions to your twig-editor.js file
+ * to improve fold gutter functionality
+ */
+
+// Add this after editor initialization
+function enhanceFoldGutters() {
+    // Add better fold markers on line numbers
+    editor.on("renderLine", function(cm, line, el) {
+        const lineContent = line.text;
+        
+        // Check if line has foldable content with improved detection
+        if (
+            // HTML tag patterns
+            /<(div|section|main|article|header|footer|aside|nav|ul|ol|table|form|head|body|style|script)(\s|>)/.test(lineContent) ||
+            // Twig block patterns with more precise detection
+            /{%\s*(if|for|block|macro|embed|set|apply|verbatim|with)(\s+|\s*%})/.test(lineContent)
+        ) {
+            el.classList.add("foldable");
+            
+            // Add a small indicator on the line itself
+            if (!el.querySelector('.fold-indicator')) {
+                const foldIndicator = document.createElement('span');
+                foldIndicator.className = 'fold-indicator';
+                foldIndicator.textContent = '▶';
+                foldIndicator.style.position = 'absolute';
+                foldIndicator.style.left = '-5px';
+                foldIndicator.style.color = 'var(--fold-color)';
+                foldIndicator.style.fontSize = '10px';
+                foldIndicator.style.opacity = '0.7';
+                foldIndicator.style.cursor = 'pointer';
+                el.appendChild(foldIndicator);
+            }
+        }
+    });
+    
+    // Force refresh of gutters
+    setTimeout(function() {
+        editor.refresh();
+        
+        // Mark all potentially foldable lines
+        for (let i = 0; i < editor.lineCount(); i++) {
+            const line = editor.getLine(i);
+            if (
+                // HTML tag patterns
+                /<(div|section|main|article|header|footer|aside|nav|ul|ol|table|form|head|body|style|script)(\s|>)/.test(line) ||
+                // Twig block patterns
+                /{%\s*(if|for|block|macro|embed|set|apply|verbatim|with)(\s+|\s*%})/.test(line)
+            ) {
+                editor.addLineClass(i, "background", "foldable-line");
+            }
+        }
+    }, 100);
+    
+    // Make fold gutters more visible
+    const gutters = document.querySelectorAll('.CodeMirror-foldgutter-open, .CodeMirror-foldgutter-folded');
+    gutters.forEach(gutter => {
+        gutter.style.color = 'var(--fold-color)';
+        gutter.style.fontSize = '14px';
+        gutter.style.opacity = '1';
+        gutter.style.cursor = 'pointer';
+    });
+}
+
+// Ensure fold gutter is working
+function setupFoldHandlers() {
+    // Make fold gutter more interactive and visible
+    document.addEventListener('click', function(event) {
+        // Check if the click target is a fold gutter or indicator
+        if (
+            event.target.classList.contains('CodeMirror-foldgutter-open') ||
+            event.target.classList.contains('CodeMirror-foldgutter-folded') ||
+            event.target.classList.contains('fold-indicator')
+        ) {
+            const cm = editor;
+            const lineIndex = event.target.closest('.CodeMirror-line') ? 
+                cm.getLineNumber(event.target.closest('.CodeMirror-line')) : 
+                parseInt(event.target.closest('.CodeMirror-gutter-wrapper').getAttribute('data-line-number'));
+            
+            if (!isNaN(lineIndex)) {
+                cm.foldCode(CodeMirror.Pos(lineIndex, 0));
+            }
+        }
+    });
+    
+    // Add style for fold gutters
+    const style = document.createElement('style');
+    style.textContent = `
+        .CodeMirror-foldgutter-open,
+        .CodeMirror-foldgutter-folded {
+            color: var(--fold-color);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .CodeMirror-foldgutter-open:hover,
+        .CodeMirror-foldgutter-folded:hover {
+            transform: scale(1.2);
+        }
+        
+        .CodeMirror-foldgutter-open:after {
+            content: "▼";
+        }
+        
+        .CodeMirror-foldgutter-folded:after {
+            content: "▶";
+        }
+        
+        .foldable-line {
+            background-color: rgba(114, 135, 253, 0.05);
+        }
+        
+        .fold-indicator {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .CodeMirror-line:hover .fold-indicator {
+            opacity: 0.7;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Call these functions after editor initialization
+// Add these lines at the end of your editor initialization code
+enhanceFoldGutters();
+setupFoldHandlers();
     // Update the analyzeTwigSyntax function with comprehensive Twig checks
     function analyzeTwigSyntax(code) {
         const errors = [];
